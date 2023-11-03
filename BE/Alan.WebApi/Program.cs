@@ -18,6 +18,11 @@ namespace Alan.WebApi
                 Key = configuration.GetValue<string>("AzureDocumentKey")
             };
             builder.Services.AddSingleton(setting);
+            builder.Services.AddSingleton(new AzureOpenAISetting()
+            {
+                EndPoint = configuration.GetValue<string>("AzureOpenAIEndPoint"),
+                Key = configuration.GetValue<string>("AzureOpenAIKey")
+            });
             builder.Services.AddControllers();
 
             var app = builder.Build();
