@@ -1,3 +1,5 @@
+using System;
+
 namespace Alan.WebApi
 {
     public class WeatherForecast

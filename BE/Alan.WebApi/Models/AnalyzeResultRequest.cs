@@ -1,4 +1,6 @@
-﻿namespace Alan.WebApi.Models
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Alan.WebApi.Models
 {
     public class AnalyzeResultRequest
     {

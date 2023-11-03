@@ -1,4 +1,10 @@
 using Alan.WebApi.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
 
 namespace Alan.WebApi
 {
@@ -6,32 +12,56 @@ namespace Alan.WebApi
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            CreateHostBuilder(args).Build().Run();
+        }
 
-            // Add services to the container.
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddEnvironmentVariables();
+                    config.AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true);
+#if DEBUG
+                    config.AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.{Environment.UserName}.json", true, true);
+#endif
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+    }
 
-            var configuration = builder.Configuration;
+    public class Startup
+    {
+        public IConfiguration Configuration { get; }
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
 
+        public void ConfigureServices(IServiceCollection services)
+        {
             var setting = new AzureDocumentSetting()
             {
-                EndPoint = configuration.GetValue<string>("AzureDocumentEndPoint"),
-                Key = configuration.GetValue<string>("AzureDocumentKey")
+                EndPoint = Configuration.GetValue<string>("AzureDocumentEndPoint"),
+                Key = Configuration.GetValue<string>("AzureDocumentKey")
             };
-            builder.Services.AddSingleton(setting);
-            builder.Services.AddSingleton(new AzureOpenAISetting()
+            services.AddSingleton(setting);
+            services.AddSingleton(new AzureOpenAISetting()
             {
-                EndPoint = configuration.GetValue<string>("AzureOpenAIEndPoint"),
-                Key = configuration.GetValue<string>("AzureOpenAIKey")
+                EndPoint = Configuration.GetValue<string>("AzureOpenAIEndPoint"),
+                Key = Configuration.GetValue<string>("AzureOpenAIKey")
             });
-            builder.Services.AddControllers();
+            services.AddControllers();
+        }
 
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-
-            app.MapControllers();
-
-            app.Run();
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
