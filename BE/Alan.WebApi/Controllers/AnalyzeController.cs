@@ -66,6 +66,11 @@ namespace Alan.WebApi.Controllers
                     {
                         List<DocumentTableCell> cells = table.Cells.Where(n => n.RowIndex == rowNumber).ToList();
 
+                        if (cells.Count <= extractInfo.ValueIndex || cells.Count <= extractInfo.NameIndex)
+                        {
+                            continue;
+                        }
+
                         if (decimal.TryParse(cells[extractInfo.ValueIndex].Content, out decimal bloodResult)
                             && !string.IsNullOrWhiteSpace(cells[extractInfo.NameIndex].Content))
                         {
@@ -132,15 +137,10 @@ namespace Alan.WebApi.Controllers
                     {
                         unitIndexes.Add(colNumber);
                     }
-                }
-
-                if (int.TryParse(cells[0].Content, out _))
-                {
-                    nameIndexes.Add(1);
-                }
-                else
-                {
-                    nameIndexes.Add(0);
+                    else if (!string.IsNullOrWhiteSpace(normalizedContent))
+                    {
+                        nameIndexes.Add(colNumber);
+                    }
                 }
             }
 
